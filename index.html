@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Professional Tax Calculator</title>
+
+  <!-- ✅ FORCE NO CACHE (helps clients get latest) -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
+  <style>
+    /* =========================
+       CLEAN LIGHT (Sharp) — White & Gray
+       ========================= */
+    :root{
+      --blue:#0070C0;
+      --blue2:#0073BB;
+      --green:#28A745;
+
+      --bg:#f3f4f6;          /* light gray page */
+      --panel:#ffffff;       /* cards */
+      --panel2:#f8fafc;      /* inner sections */
+
+      --text:#0f172a;        /* slate-900 */
+      --muted:#64748b;       /* slate-500 */
+
+      --line:#e5e7eb;        /* gray-200 */
+      --line2:#d1d5db;       /* gray-300 */
+
+      --shadow: 0 14px 36px rgba(15,23,42,.10);
+      --focus: rgba(0,115,187,.18);
+
+      --radius:0px; /* SHARP */
+    }
+
+    *{ margin:0; padding:0; box-sizing:border-box; }
+    body{
+      font-family:'Montserrat', sans-serif;
+      background: linear-gradient(180deg, #ffffff 0%, var(--bg) 100%);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x:hidden;
+    }
+
+    /* Layout wrapper */
+    .wrap{
+      width:min(1200px, 92vw);
+      margin:0 auto;
+    }
+
+    /* =========================
+       NAVBAR (Sticky) — Light
+       ========================= */
+    .navbar{
+      height:90px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding: 0 8%;
+      position: sticky;
+      top:0;
+      z-index:1000;
+
+      background: rgba(255,255,255,.86);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--line);
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      min-width: 240px;
+    }
+    .mark{
+      width:42px;height:42px;
+      background: linear-gradient(135deg, rgba(0,115,187,.18), rgba(40,167,69,.14));
+      border: 1px solid rgba(0,115,187,.20);
+      position:relative;
+      overflow:hidden;
+    }
+    .mark::before{
+      content:"";
+      position:absolute; inset:0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.85), transparent);
+      transform: translateX(-140%);
+      animation: sweep 2.8s linear infinite;
+    }
+    @keyframes sweep{ 0%{transform:translateX(-140%)} 100%{transform:translateX(140%)} }
+
+    .brandText .title{
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin:0;
+      color: var(--text);
+      line-height: 1.1;
+    }
+    .brandText .title span{ color: var(--blue2); }
+    .brandText .sub{
+      margin-top:6px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .navRight{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+      text-align:right;
+    }
+    .metaBox{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+      border: 1px solid var(--line);
+      background: #fff;
+      padding: 10px 12px;
+      min-width: 210px;
+      box-shadow: 0 10px 22px rgba(15,23,42,.06);
+    }
+    .metaBox .dt{
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      white-space:nowrap;
+    }
+    .metaBox .ver{
+      font-size: 11px;
+      color:#475569;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      white-space:nowrap;
+    }
+
+    .btn{
+      padding: 14px 18px;
+      cursor:pointer;
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--line2);
+      border-radius: var(--radius);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      transition: .25s;
+      box-shadow: none;
+      white-space:nowrap;
+    }
+    .btn:hover{
+      border-color: var(--blue2);
+      color: var(--blue2);
+      transform: translateY(-1px);
+      box-shadow: 0 10px 22px rgba(0,115,187,.10);
+    }
+    .btn:active{ transform: translateY(1px); }
+
+    .btn-primary{
+      background: var(--blue2);
+      border-color: var(--blue2);
+      color:#fff;
+    }
+    .btn-primary:hover{
+      background: #fff;
+      color: var(--blue2);
+      border-color: var(--blue2);
+    }
+
+    /* =========================
+       HERO HEADER AREA
+       ========================= */
+    .hero{
+      padding: 34px 8% 22px;
+      border-bottom: 1px solid var(--line);
+      background: radial-gradient(900px 260px at 12% 0%, rgba(0,115,187,.10), transparent 60%),
+                  radial-gradient(700px 240px at 92% 10%, rgba(40,167,69,.08), transparent 60%);
+    }
+    .hero h1{
+      font-size: clamp(26px, 3.4vw, 52px);
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -1px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      color: var(--text);
+    }
+    .hero h1 span{ color: var(--blue2); }
+    .hero p{
+      color: #475569;
+      max-width: 900px;
+      font-size: 15px;
+      margin-bottom: 18px;
+    }
+    .devLine{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-top: 8px;
+    }
+    .devBadge{
+      border: 1px solid var(--line);
+      background: #fff;
+      padding: 10px 12px;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color:#334155;
+      box-shadow: 0 10px 22px rgba(15,23,42,.06);
+    }
+    .devBadge b{ color: var(--blue2); }
+    .linkBtn{
+      text-decoration:none;
+      display:inline-block;
+      padding: 14px 18px;
+      border: 1px solid var(--line2);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      transition: .25s;
+      background:#fff;
+    }
+    .linkBtn:hover{
+      border-color: var(--blue2);
+      color: var(--blue2);
+      transform: translateY(-1px);
+      box-shadow: 0 10px 22px rgba(0,115,187,.10);
+    }
+
+    /* =========================
+       PANELS / CARDS (Sharp) — Light
+       ========================= */
+    .panel{
+      background: var(--panel);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .panelPad{ padding: 18px; }
+
+    /* Details section */
+    .detailsTitle{
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+    .detailsTitle span{ color: var(--blue2); }
+
+    .details-container{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    @media (max-width: 980px){
+      .navbar{ padding: 0 5%; }
+      .hero{ padding: 28px 5% 18px; }
+      .details-container{ grid-template-columns: 1fr; }
+      .metaBox{ min-width: 180px; }
+    }
+
+    .group{
+      border: 1px solid var(--line);
+      background: var(--panel2);
+      padding: 14px;
+    }
+    .group h3{
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color:#334155;
+      margin-bottom: 12px;
+    }
+
+    .input-group{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .input-group label{
+      font-size: 12px;
+      font-weight: 800;
+      color:#334155;
+      letter-spacing: .3px;
+    }
+    .input-group input{
+      width: 220px;
+      max-width: 60%;
+      padding: 10px 12px;
+      background: #fff;
+      border: 1px solid var(--line2);
+      color: var(--text);
+      outline:none;
+      font-weight: 800;
+      font-size: 13px;
+      text-align: left;
+      transition: .2s;
+    }
+    .input-group input:focus{
+      border-color: rgba(0,115,187,.65);
+      box-shadow: 0 0 0 4px var(--focus);
+    }
+
+    /* Opening balance row (restyled) */
+    .balance-row{
+      margin: 18px 0 0;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+      padding: 14px;
+      background: #fff;
+      border: 1px solid var(--line);
+      box-shadow: 0 14px 36px rgba(15,23,42,.08);
+    }
+    .balance-row label{
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--blue2);
+      font-size: 12px;
+    }
+    .balance-row input{
+      width: 220px;
+      padding: 10px 12px;
+      background: #fff;
+      border: 1px solid rgba(0,115,187,.35);
+      color: var(--text);
+      outline:none;
+      font-weight: 900;
+      text-align: left;
+    }
+    .balance-row input:focus{
+      box-shadow: 0 0 0 4px var(--focus);
+    }
+
+    /* Section title */
+    .section-title{
+      margin: 22px 0 12px;
+      font-weight: 900;
+      font-size: 13px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--text);
+    }
+    .section-title span{ color: var(--blue2); }
+
+    /* Columns -> sharp premium cards */
+    .columns{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 16px;
+    }
+    @media(max-width: 980px){
+      .columns{ grid-template-columns: 1fr; }
+    }
+
+    .column{
+      background: #fff;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      text-align:left;
+    }
+    .column h3{
+      margin: 0 0 14px 0;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--text);
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 10px;
+      text-align:left;
+    }
+    .column h3 span{ color: var(--blue2); }
+
+    .column .input-group label{
+      color:#334155;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .column .input-group input{
+      width: 60%;
+      max-width: 240px;
+      text-align: right;
+      background:#fff;
+      border:1px solid var(--line2);
+    }
+
+    /* Action buttons row */
+    .actionsRow{
+      display:flex;
+      gap: 14px;
+      flex-wrap:wrap;
+      margin-top: 18px;
+    }
+
+    /* Report cards */
+    .report{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 16px;
+      margin-top: 18px;
+    }
+    @media(max-width: 980px){
+      .report{ grid-template-columns: 1fr; }
+    }
+
+    .report-card{
+      background: #fff;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      font-size: 13px;
+      overflow:hidden;
+    }
+    .report-card h4{
+      margin: 0 0 12px 0;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--text);
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 10px;
+      text-align:left;
+    }
+    .report-table{
+      width:100%;
+      border-collapse: collapse;
+      margin-top: 6px;
+    }
+    .report-table td, .report-table th{
+      border: 1px solid var(--line2);
+      padding: 10px;
+      font-size: 12px;
+      text-align: left;
+      color:#334155;
+    }
+    .report-table th{
+      background: #f8fafc;
+      color: var(--text);
+      font-weight: 900;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    /* Results */
+    .results{
+      display:grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap: 16px;
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+    }
+    @media(max-width: 980px){
+      .results{ grid-template-columns: 1fr; }
+    }
+
+    .result-card{
+      background: #fff;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      font-weight: 900;
+      text-align:left;
+      color:#334155;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-size: 12px;
+    }
+    .result-card span{
+      display:block;
+      margin-top: 10px;
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--blue2);
+      letter-spacing: 0;
+      text-transform:none;
+      text-align:left;
+    }
+
+    .final-balance{
+      border-color: rgba(139,0,0,.25);
+    }
+    .final-balance span{
+      color:#b91c1c;
+      font-size: 24px;
+    }
+
+    /* Footer */
+    .bottom-line{
+      margin-top: 26px;
+      padding: 26px 8%;
+      border-top: 1px solid var(--line);
+      text-align:center;
+      font-size: 12px;
+      color:#64748b;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      background:#fff;
+    }
+    .bottom-line b{ color: var(--blue2); }
+
+    /* Small tweaks */
+    ::placeholder{ color:#94a3b8; opacity:1; }
+  </style>
+</head>
+
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="brand">
+      <div class="mark" aria-hidden="true"></div>
+      <div class="brandText">
+        <div class="title">PROFESSIONAL <span>TAX</span> CALCULATOR</div>
+        <div class="sub">SALES TAX (JORDAN) • PREMIUM TOOL</div>
+      </div>
+    </div>
+
+    <div class="navRight">
+      <div class="metaBox">
+        <div class="dt" id="appDateTime">—</div>
+        <div class="ver" id="appVersion">—</div>
+      </div>
+      <a class="btn" href="https://www.majdoba.me" target="_blank" rel="noopener">VISIT SITE</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="wrap">
+      <h1>Tax Reporting <span>Made Clear.</span></h1>
+      <p>
+        Enterprise-style tax return calculator for Jordan Sales Tax. Enter values, calculate totals, and export a polished PDF report.
+      </p>
+      <div class="devLine">
+        <div class="devBadge">DEVELOPED BY: <b>AHMAD MAJDOBA</b></div>
+        <button class="btn btn-primary" onclick="calculateTax()">CALCULATE</button>
+        <button class="btn" onclick="exportPDF()">EXPORT PDF</button>
+      </div>
+
+      <div style="margin-top:18px" class="panel">
+        <div class="panelPad">
+          <div class="detailsTitle">Company <span>& Declaration</span> Details</div>
+
+          <div class="details-container">
+            <div class="group">
+              <h3>Company</h3>
+              <div class="input-group">
+                <label for="companyName">Company Name</label>
+                <input type="text" id="companyName" placeholder="Enter company name">
+              </div>
+              <div class="input-group">
+                <label for="taxID">Tax ID / VAT</label>
+                <input type="text" id="taxID" placeholder="Enter tax registration number">
+              </div>
+              <div class="input-group">
+                <label for="declarationDate">Declaration Date</label>
+                <input type="date" id="declarationDate">
+              </div>
+            </div>
+
+            <div class="group">
+              <h3>Tax Period</h3>
+              <div class="input-group">
+                <label for="taxPeriodStart">Start (From)</label>
+                <input type="date" id="taxPeriodStart">
+              </div>
+              <div class="input-group">
+                <label for="taxPeriodEnd">End (To)</label>
+                <input type="date" id="taxPeriodEnd">
+              </div>
+            </div>
+          </div>
+
+          <div class="balance-row">
+            <label for="openingBalance">OPENING BALANCE</label>
+            <input type="number" id="openingBalance" value="0">
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title"><span>TAX RETURN</span> CALCULATOR</div>
+
+      <div class="columns">
+        <div class="column">
+          <h3><span>Sales</span></h3>
+          <div class="input-group">
+            <label for="sales16">16%</label>
+            <input type="number" id="sales16" value="0">
+          </div>
+          <div class="input-group">
+            <label for="sales10">10%</label>
+            <input type="number" id="sales10" value="0">
+          </div>
+          <div class="input-group">
+            <label for="sales4">4%</label>
+            <input type="number" id="sales4" value="0">
+          </div>
+        </div>
+
+        <div class="column">
+          <h3><span>Purchases</span></h3>
+          <div class="input-group">
+            <label for="purchases16">16%</label>
+            <input type="number" id="purchases16" value="0">
+          </div>
+          <div class="input-group">
+            <label for="purchases10">10%</label>
+            <input type="number" id="purchases10" value="0">
+          </div>
+          <div class="input-group">
+            <label for="purchases4">4%</label>
+            <input type="number" id="purchases4" value="0">
+          </div>
+        </div>
+
+        <div class="column">
+          <h3><span>Imports</span></h3>
+          <div class="input-group">
+            <label for="imports16">16%</label>
+            <input type="number" id="imports16" value="0">
+          </div>
+          <div class="input-group">
+            <label for="imports10">10%</label>
+            <input type="number" id="imports10" value="0">
+          </div>
+          <div class="input-group">
+            <label for="imports4">4%</label>
+            <input type="number" id="imports4" value="0">
+          </div>
+        </div>
+      </div>
+
+      <div class="report">
+        <div class="report-card" id="reportSales"><h4>Sales Report</h4></div>
+        <div class="report-card" id="reportPurchases"><h4>Purchases Report</h4></div>
+        <div class="report-card" id="reportImports"><h4>Imports Report</h4></div>
+      </div>
+
+      <div class="results">
+        <div class="result-card">Sales Tax <span id="totalSales">0.00</span></div>
+        <div class="result-card">Purchases Tax <span id="totalPurchases">0.00</span></div>
+        <div class="result-card">Imports Tax <span id="totalImports">0.00</span></div>
+        <div class="result-card final-balance">Final Balance <span id="finalBalance">0.00</span></div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="bottom-line">
+    © <span id="footerYear"></span> <b>MAJDOBA</b> • ALL RIGHTS RESERVED.
+  </footer>
+
+  <script>
+    let salesData = [];
+    let purchasesData = [];
+    let importsData = [];
+
+    function format(value) {
+      return parseFloat(value).toFixed(2);
+    }
+
+    function calculateTax() {
+      const opening = parseFloat(document.getElementById('openingBalance').value) || 0;
+
+      const s16 = parseFloat(document.getElementById('sales16').value) || 0;
+      const s10 = parseFloat(document.getElementById('sales10').value) || 0;
+      const s4  = parseFloat(document.getElementById('sales4').value) || 0;
+
+      const salesTax = (s16 * 0.16) + (s10 * 0.10) + (s4 * 0.04);
+
+      salesData = [
+        ['16%', s16, (s16 * 0.16)],
+        ['10%', s10, (s10 * 0.10)],
+        ['4%',  s4,  (s4  * 0.04)]
+      ];
+
+      const p16 = parseFloat(document.getElementById('purchases16').value) || 0;
+      const p10 = parseFloat(document.getElementById('purchases10').value) || 0;
+      const p4  = parseFloat(document.getElementById('purchases4').value) || 0;
+
+      const purchasesTax = (p16 * 0.16) + (p10 * 0.10) + (p4 * 0.04);
+
+      purchasesData = [
+        ['16%', p16, (p16 * 0.16)],
+        ['10%', p10, (p10 * 0.10)],
+        ['4%',  p4,  (p4  * 0.04)]
+      ];
+
+      const i16 = parseFloat(document.getElementById('imports16').value) || 0;
+      const i10 = parseFloat(document.getElementById('imports10').value) || 0;
+      const i4  = parseFloat(document.getElementById('imports4').value) || 0;
+
+      const importsTax = (i16 * 0.16) + (i10 * 0.10) + (i4 * 0.04);
+
+      importsData = [
+        ['16%', i16, (i16 * 0.16)],
+        ['10%', i10, (i10 * 0.10)],
+        ['4%',  i4,  (i4  * 0.04)]
+      ];
+
+      const finalBalance = opening + purchasesTax + importsTax - salesTax;
+
+      document.getElementById('totalSales').innerText = format(salesTax);
+      document.getElementById('totalPurchases').innerText = format(purchasesTax);
+      document.getElementById('totalImports').innerText = format(importsTax);
+      document.getElementById('finalBalance').innerText = format(finalBalance);
+
+      updateReportCard('reportSales', 'Sales Report', salesData);
+      updateReportCard('reportPurchases', 'Purchases Report', purchasesData);
+      updateReportCard('reportImports', 'Imports Report', importsData);
+    }
+
+    function updateReportCard(elementId, title, data) {
+      const tableRows = data.map(row =>
+        `<tr><td>${row[0]}</td><td style="text-align:right">${format(row[1])}</td><td style="text-align:right">${format(row[2])}</td></tr>`
+      ).join('');
+
+      document.getElementById(elementId).innerHTML = `
+        <h4>${title}</h4>
+        <table class="report-table">
+          <tr><th>Rate</th><th style="text-align:right">Amount</th><th style="text-align:right">Tax</th></tr>
+          ${tableRows}
+        </table>
+      `;
+    }
+
+    function exportPDF() {
+      if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF === 'undefined') {
+        alert("PDF library is not loaded. Please ensure you are connected to the internet.");
+        return;
+      }
+
+      calculateTax();
+
+      const companyName = document.getElementById('companyName').value.trim() || 'N/A';
+      const taxID = document.getElementById('taxID').value.trim() || 'N/A';
+      const declarationDate = document.getElementById('declarationDate').value.trim() || 'N/A';
+      const taxPeriodStart = document.getElementById('taxPeriodStart').value.trim() || 'N/A';
+      const taxPeriodEnd = document.getElementById('taxPeriodEnd').value.trim() || 'N/A';
+
+      const doc = new window.jspdf.jsPDF();
+      let finalY = 0;
+
+      const BLUE = [0, 112, 192];
+      const RED  = [139, 0, 0];
+      const GREY = [44, 62, 80];
+
+      doc.setFontSize(20);
+      doc.setTextColor(BLUE[0], BLUE[1], BLUE[2]);
+      doc.text("Professional Tax Report", 14, 20);
+
+      doc.setFontSize(10);
+      doc.setTextColor(GREY[0], GREY[1], GREY[2]);
+      doc.text(`Company: ${companyName}`, 14, 28);
+      doc.text(`Tax ID: ${taxID}`, 14, 34);
+
+      doc.setFontSize(10);
+      doc.setTextColor(BLUE[0], BLUE[1], BLUE[2]);
+      doc.text(`Declaration Date: ${declarationDate}`, 120, 28);
+      doc.text(`Tax Period: ${taxPeriodStart} to ${taxPeriodEnd}`, 120, 34);
+
+      doc.setLineWidth(0.5);
+      doc.setDrawColor(BLUE[0], BLUE[1], BLUE[2]);
+      doc.line(14, 38, 196, 38);
+
+      const opening = parseFloat(document.getElementById('openingBalance').value) || 0;
+      doc.setTextColor(GREY[0], GREY[1], GREY[2]);
+      doc.setFontSize(12);
+      doc.text(`Opening Balance: ${format(opening)}`, 14, 45);
+
+      finalY = 51;
+
+      const mapDataForPDF = (data) => data.map(([rate, amount, tax]) => [rate, format(amount), format(tax)]);
+
+      doc.setFontSize(14);
+      doc.setTextColor(BLUE[0], BLUE[1], BLUE[2]);
+      doc.text("Sales Details", 14, finalY);
+      doc.autoTable({
+        startY: finalY + 2,
+        head: [['Rate', 'Amount', 'Tax']],
+        body: mapDataForPDF(salesData),
+        theme: 'striped',
+        headStyles: { fillColor: BLUE, textColor: 255 },
+        columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' } },
+      });
+      finalY = doc.lastAutoTable.finalY;
+
+      doc.setFontSize(14);
+      doc.setTextColor(BLUE[0], BLUE[1], BLUE[2]);
+      doc.text("Purchases Details", 14, finalY + 10);
+      doc.autoTable({
+        startY: finalY + 12,
+        head: [['Rate', 'Amount', 'Tax']],
+        body: mapDataForPDF(purchasesData),
+        theme: 'striped',
+        headStyles: { fillColor: BLUE, textColor: 255 },
+        columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' } },
+      });
+      finalY = doc.lastAutoTable.finalY;
+
+      doc.setFontSize(14);
+      doc.setTextColor(BLUE[0], BLUE[1], BLUE[2]);
+      doc.text("Imports Details", 14, finalY + 10);
+      doc.autoTable({
+        startY: finalY + 12,
+        head: [['Rate', 'Amount', 'Tax']],
+        body: mapDataForPDF(importsData),
+        theme: 'striped',
+        headStyles: { fillColor: BLUE, textColor: 255 },
+        columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' } },
+      });
+      finalY = doc.lastAutoTable.finalY;
+
+      const totalSales = parseFloat(document.getElementById('totalSales').innerText);
+      const totalPurchases = parseFloat(document.getElementById('totalPurchases').innerText);
+      const totalImports = parseFloat(document.getElementById('totalImports').innerText);
+      const finalBalance = parseFloat(document.getElementById('finalBalance').innerText);
+
+      doc.setLineWidth(0.5);
+      doc.setDrawColor(BLUE[0], BLUE[1], BLUE[2]);
+      doc.line(14, finalY + 10, 196, finalY + 10);
+
+      doc.setFontSize(14);
+      doc.setTextColor(BLUE[0], BLUE[1], BLUE[2]);
+      doc.text(`Total Sales Tax: ${format(totalSales)}`, 14, finalY + 18);
+      doc.text(`Total Purchases Tax: ${format(totalPurchases)}`, 14, finalY + 26);
+      doc.text(`Total Imports Tax: ${format(totalImports)}`, 14, finalY + 34);
+
+      doc.setLineWidth(1);
+      doc.setDrawColor(RED[0], RED[1], RED[2]);
+      doc.line(14, finalY + 38, 196, finalY + 38);
+
+      doc.setTextColor(RED[0], RED[1], RED[2]);
+      doc.setFontSize(18);
+      doc.text(`FINAL BALANCE: ${format(finalBalance)}`, 14, finalY + 46);
+
+      doc.save('Professional_Tax_Report.pdf');
+    }
+
+    /* Header datetime + auto version from GitHub latest commit */
+    function startHeaderClock() {
+      const dt = document.getElementById('appDateTime');
+      if (!dt) return;
+      const tick = () => dt.textContent = new Date().toLocaleString('en-GB');
+      tick();
+      setInterval(tick, 1000);
+    }
+
+    async function updateVersionFromGitHub() {
+      const verEl = document.getElementById('appVersion');
+      if (!verEl) return;
+
+      const owner = "ca-almajdoba";
+      const repo = "sales_tax_calculator";
+      const url = `https://api.github.com/repos/${owner}/${repo}/commits?per_page=1`;
+
+      try {
+        const res = await fetch(url, { cache: "no-store" });
+        if (!res.ok) throw new Error("GitHub API error");
+
+        const data = await res.json();
+        const latest = data && data[0];
+        const iso = latest?.commit?.author?.date || latest?.commit?.committer?.date;
+        const sha = latest?.sha ? String(latest.sha).slice(0, 7) : "";
+
+        if (!iso) throw new Error("No commit date");
+
+        const d = new Date(iso);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, "0");
+        const vNum = String(Math.floor((d.getTime() / 1000) % 1000)).padStart(3, "0");
+
+        verEl.textContent = `${year}.${month}.V${vNum}`;
+        verEl.title = `Last update: ${iso}${sha ? " | " + sha : ""}`;
+      } catch (e) {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, "0");
+        const vNum = String(Math.floor((now.getTime() / 1000) % 1000)).padStart(3, "0");
+        verEl.textContent = `${year}.${month}.V${vNum}`;
+        verEl.title = "Version fallback (GitHub API not reachable)";
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const dateInput = document.getElementById('declarationDate');
+      if (dateInput) {
+        const today = new Date();
+        dateInput.value = today.toISOString().split('T')[0];
+      }
+
+      document.getElementById('footerYear').textContent = new Date().getFullYear();
+
+      startHeaderClock();
+      updateVersionFromGitHub();
+      setInterval(updateVersionFromGitHub, 10 * 60 * 1000);
+    });
+
+    window.onload = calculateTax;
+  </script>
+
+</body>
+</html>
