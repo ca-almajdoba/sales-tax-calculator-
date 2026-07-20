@@ -10,7 +10,11 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
 
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- استدعاء خط Google Sans والبدائل المتوافقة رسميًا لضمان أعلى استقرار وأوزان احترافية للخطوط -->
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Product+Sans:wght@300;400;700;800&display=swap" rel="stylesheet">
+  
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
@@ -37,11 +41,14 @@
       --focus: rgba(0,115,187,.18);
 
       --radius:0px; /* SHARP */
+      
+      /* تعريف متغير مخصص لخط Google Sans وتطبيق البدائل الذكية */
+      --font-family: 'Google Sans', 'Product Sans', 'Open Sans', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
     }
 
     *{ margin:0; padding:0; box-sizing:border-box; }
     body{
-      font-family:'Montserrat', sans-serif;
+      font-family: var(--font-family);
       background: linear-gradient(180deg, #ffffff 0%, var(--bg) 100%);
       color: var(--text);
       line-height: 1.6;
@@ -161,6 +168,7 @@
       transition: .25s;
       box-shadow: none;
       white-space:nowrap;
+      font-family: var(--font-family);
     }
     .btn:hover{
       border-color: var(--blue2);
@@ -237,6 +245,7 @@
       text-transform: uppercase;
       transition: .25s;
       background:#fff;
+      font-family: var(--font-family);
     }
     .linkBtn:hover{
       border-color: var(--blue2);
@@ -318,6 +327,7 @@
       font-size: 13px;
       text-align: left;
       transition: .2s;
+      font-family: var(--font-family);
     }
     .input-group input:focus{
       border-color: rgba(0,115,187,.65);
@@ -352,6 +362,7 @@
       outline:none;
       font-weight: 900;
       text-align: left;
+      font-family: var(--font-family);
     }
     .balance-row input:focus{
       box-shadow: 0 0 0 4px var(--focus);
@@ -554,7 +565,7 @@
     </div>
   </nav>
 
-  <!-- HERO -->
+  <!-- HERO SECTION -->
   <section class="hero">
     <div class="wrap">
       <h1>Tax Reporting <span>Made Clear.</span></h1>
@@ -700,7 +711,7 @@
       salesData = [
         ['16%', s16, (s16 * 0.16)],
         ['10%', s10, (s10 * 0.10)],
-        ['4%',  s4,  (s4  * 0.04)]
+        ['4%',  s4,  (s4   * 0.04)]
       ];
 
       const p16 = parseFloat(document.getElementById('purchases16').value) || 0;
@@ -712,7 +723,7 @@
       purchasesData = [
         ['16%', p16, (p16 * 0.16)],
         ['10%', p10, (p10 * 0.10)],
-        ['4%',  p4,  (p4  * 0.04)]
+        ['4%',  p4,  (p4   * 0.04)]
       ];
 
       const i16 = parseFloat(document.getElementById('imports16').value) || 0;
@@ -724,7 +735,7 @@
       importsData = [
         ['16%', i16, (i16 * 0.16)],
         ['10%', i10, (i10 * 0.10)],
-        ['4%',  i4,  (i4  * 0.04)]
+        ['4%',  i4,  (i4   * 0.04)]
       ];
 
       const finalBalance = opening + purchasesTax + importsTax - salesTax;
